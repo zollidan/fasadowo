@@ -11,18 +11,17 @@ import (
 
 func InitDatabase() (db *gorm.DB){
 	var err error
-	db, err = gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
+	db, err = gorm.Open(sqlite.Open("dev.db"), &gorm.Config{})
 	if err != nil {
 		log.Fatal("failed to connect database")
 	}
 
-	
-	// Создаём все таблицы
 	err = db.AutoMigrate(
 		&models.Category{},
 		&models.Subcategory{},
 		&models.Collection{},
 		&models.Product{},
+		&models.User{},
 	)
 	if err != nil {
 		log.Fatal("failed to migrate database")

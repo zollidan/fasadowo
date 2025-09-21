@@ -1,6 +1,10 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 // Category 1 -> many Subcategories
 type Category struct {
@@ -35,4 +39,12 @@ type Product struct {
 	Price        float64   `gorm:"type:numeric(10,2)"`
 	CreatedAt    time.Time
 	CollectionID uint      `gorm:"not null"`
+}
+ 
+type User struct {
+	gorm.Model
+	Name string
+	Surname string
+	Phone string
+	Email string
 }
