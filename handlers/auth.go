@@ -4,11 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"log"
 	"net/http"
-	"time"
 
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/go-chi/jwtauth/v5"
 	"github.com/zollidan/fasadowo/models"
 	"github.com/zollidan/fasadowo/utils"
 	"gorm.io/gorm"
@@ -28,7 +26,8 @@ type UserRegisterData struct {
 }
 
 type AuthHandler struct {
-	DB *gorm.DB
+	DB        *gorm.DB
+	TokenAuth *jwtauth.JWTAuth
 }
 
 func (h *AuthHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
@@ -53,22 +52,11 @@ func (h *AuthHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": existUser.ID,
-		"iat": time.Now().Unix(),
-		"exp": time.Now().Add(time.Hour).Unix(),
+	_, tokenString, _ := h.TokenAuth.Encode(map[string]interface{}{
+		"user_id": existUser.ID,
 	})
-
-	// TODO: provide cfg with secret
-	tokenString, err := token.SignedString([]byte("dev-secret"))
-	if err != nil {
-		utils.WriteError(w, http.StatusInternalServerError, "Internal Server Error!")
-	}
-
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(tokenString); err != nil {
-		log.Printf("Failed to write error respponse: %v", err)
-	}
+	json.NewEncoder(w).Encode(map[string]string{"token": tokenString})
 
 }
 
