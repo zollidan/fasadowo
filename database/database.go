@@ -40,7 +40,13 @@ func InitDatabase() (db *gorm.DB) {
 	db.Create(&col1)
 	db.Create(&col2)
 
-	usr1 := models.User{Name: "test name", Surname: "test sur", Phone: "1213131", Email: "aw@as.ru", Password: "1234"}
+	usr1 := models.User{
+		Name:     "test name",
+		Surname:  "test sur",
+		Phone:    "1213131",
+		Email:    "aw@as.ru",
+		Password: "1234",
+	}
 	db.Create(&usr1)
 
 	products := []models.Product{

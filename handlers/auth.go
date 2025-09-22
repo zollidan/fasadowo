@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/zollidan/fasadowo/models"
 	"github.com/zollidan/fasadowo/utils"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -47,13 +49,17 @@ func (h *AuthHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if existUser.Password != userJson.Password {
-		utils.WriteError(w, http.StatusBadRequest, "Invalid credentials!")
+	err = bcrypt.CompareHashAndPassword([]byte(existUser.Password), []byte(userJson.Password))
+	if err != nil {
+		utils.WriteError(w, http.StatusNotFound, "Invalid credentials!")
 		return
 	}
 
 	_, tokenString, _ := h.TokenAuth.Encode(map[string]interface{}{
 		"user_id": existUser.ID,
+		"iat":     time.Now().Unix(),
+		"exp":     time.Now().Add(time.Hour).Unix(),
+		"role":    existUser.Role,
 	})
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"token": tokenString})
@@ -68,11 +74,14 @@ func (h *AuthHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+
 	err = gorm.G[models.User](h.DB).Create(context.Background(), &models.User{
-		Name:    user.Name,
-		Surname: user.Surname,
-		Phone:   user.Phone,
-		Email:   user.Email,
+		Name:     user.Name,
+		Surname:  user.Surname,
+		Phone:    user.Phone,
+		Email:    user.Email,
+		Password: string(hashedPassword),
 	})
 	if err != nil {
 		utils.WriteError(w, http.StatusBadRequest, "Error decoding json body.")

@@ -45,7 +45,8 @@ type User struct {
 	gorm.Model
 	Name     string
 	Surname  string
-	Phone    string
-	Email    string
+	Phone    string `gorm:"unique"`
+	Email    string `gorm:"unique"`
 	Password string
+	Role     string `gorm:"default:user"`
 }

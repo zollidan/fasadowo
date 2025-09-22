@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -11,6 +13,9 @@ import (
 	"github.com/zollidan/fasadowo/config"
 	"github.com/zollidan/fasadowo/database"
 	"github.com/zollidan/fasadowo/handlers"
+	"github.com/zollidan/fasadowo/httpmiddleware"
+	"github.com/zollidan/fasadowo/models"
+	"gorm.io/gorm"
 )
 
 var tokenAuth *jwtauth.JWTAuth
@@ -41,10 +46,14 @@ func main() {
 		r.Group(func(r chi.Router) {
 			r.Use(jwtauth.Verifier(tokenAuth))
 			r.Use(jwtauth.Authenticator(tokenAuth))
-
-			r.Get("/admin", func(w http.ResponseWriter, r *http.Request) {
+			r.Get("/user/info", func(w http.ResponseWriter, r *http.Request) {
 				_, claims, _ := jwtauth.FromContext(r.Context())
-				w.Write([]byte(fmt.Sprintf("protected area. hi %v", claims["user_id"])))
+				user, _ := gorm.G[models.User](db).Where("id = ?", claims["user_id"]).First(context.Background())
+				json.NewEncoder(w).Encode(map[string]string{"email": user.Email})
+			})
+			r.With(httpmiddleware.RequireRole("admin")).Get("/admin", func(w http.ResponseWriter, r *http.Request) {
+				_, claims, _ := jwtauth.FromContext(r.Context())
+				w.Write([]byte(fmt.Sprintf("welcome admin, user_id=%v", claims["user_id"])))
 			})
 		})
 
