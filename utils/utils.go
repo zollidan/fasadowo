@@ -10,12 +10,11 @@ import (
 )
 
 type ErrorResponse struct {
-	Error string 
+	Error   string
 	Message string
 }
 
 type SuccessResponse struct {
-	Data interface{}
 	Message string
 }
 
@@ -23,7 +22,7 @@ func WriteError(w http.ResponseWriter, statusCode int, message string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 	resp := ErrorResponse{
-		Error: http.StatusText(statusCode),
+		Error:   http.StatusText(statusCode),
 		Message: message,
 	}
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
@@ -31,16 +30,23 @@ func WriteError(w http.ResponseWriter, statusCode int, message string) {
 	}
 }
 
-func writeSuccess() {
-
-}
+// func writeSuccess(w http.ResponseWriter, statusCode int, message string) {
+// 	w.Header().Set("Content-Type", "application/json")
+// 	w.WriteHeader(statusCode)
+// 	resp := SuccessResponse{
+// 		Message: message,
+// 	}
+// 	if err := json.NewEncoder(w).Encode(resp); err != nil {
+// 		log.Printf("Failed to write error respponse: %v", err)
+// 	}
+// }
 
 // func GetParam(param string, w http.ResponseWriter, r *http.Request) (*int, error) {
 // 	idStr := chi.URLParam(r, "subcategoryID")
 // 	id, err := strconv.Atoi(idStr)
 // 	if err != nil {
 // 		WriteError(w, http.StatusBadRequest, "Invalid subcategory ID")
-// 		return nil, err 
+// 		return nil, err
 // 	}
 
 // 	return id, nil

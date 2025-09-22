@@ -1,15 +1,20 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/zollidan/fasadowo/config"
 	"github.com/zollidan/fasadowo/database"
 	"github.com/zollidan/fasadowo/handlers"
 )
 
 func main() {
+
+	cfg := config.New()
+
 	db := database.InitDatabase()
 
 	authHandler := handlers.AuthHandler{DB: db}
@@ -25,6 +30,7 @@ func main() {
 
 	r.Route("/api", func(r chi.Router) {
 		r.Route("/auth", func(r chi.Router) {
+			r.Post("/login", authHandler.LoginUser)
 			r.Post("/register", authHandler.RegisterUser)
 		})
 		r.Route("/category", func(r chi.Router) {
@@ -33,7 +39,7 @@ func main() {
 				r.Get("/", categoryHandler.GetCategory)
 			})
 		})
-		r.Route("/subcategory", func (r chi.Router)  {
+		r.Route("/subcategory", func(r chi.Router) {
 			r.Get("/", subcategoriesHandler.ListSubcategory)
 			r.Route("/{subcategoryID}", func(r chi.Router) {
 				r.Get("/", subcategoriesHandler.GetSubcategory)
@@ -47,5 +53,6 @@ func main() {
 		})
 	})
 
-	http.ListenAndServe("localhost:3000", r)
+	log.Printf("Server is running on addr -> http://%s", cfg.ServerAddress())
+	http.ListenAndServe(cfg.ServerAddress(), r)
 }

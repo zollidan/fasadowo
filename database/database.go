@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func InitDatabase() (db *gorm.DB){
+func InitDatabase() (db *gorm.DB) {
 	var err error
 	db, err = gorm.Open(sqlite.Open("dev.db"), &gorm.Config{})
 	if err != nil {
@@ -39,6 +39,9 @@ func InitDatabase() (db *gorm.DB){
 	col2 := models.Collection{Name: "Gaming Laptops", SubcategoryID: sub2.ID}
 	db.Create(&col1)
 	db.Create(&col2)
+
+	usr1 := models.User{Name: "test name", Surname: "test sur", Phone: "1213131", Email: "aw@as.ru", Password: "1234"}
+	db.Create(&usr1)
 
 	products := []models.Product{
 		{Name: "iPhone 15 Pro", Price: 1200, CollectionID: col1.ID},
